@@ -352,13 +352,24 @@ class HallucinatedAttribute(ASTPattern):
     message = "Hallucinated attribute - attribute does not exist in Python"
     node_types = (ast.Attribute,)
     
-    # Attributes that are method calls in JS but not Python
-    JS_ATTRIBUTES = {
+    # Attributes from other languages that don't exist in Python
+    INVALID_ATTRIBUTES = {
+        # JavaScript
         'length': "Use len(obj) not obj.length - JavaScript pattern",
         'size': "Use len(obj) not obj.size - JavaScript pattern (unless pandas/set)",
         'prototype': "Python doesn't have prototypes - JavaScript pattern",
         '__proto__': "Python doesn't have __proto__ - JavaScript pattern",
         'constructor': "Use type(obj) or obj.__class__ - JavaScript pattern",
+        
+        # Java/C#
+        'Length': "Use len(obj) not obj.Length - C# pattern",
+        'Count': "Use len(obj) not obj.Count - C# pattern",
+        
+        # Go/Ruby
+        'nil': "Use None not nil - Go/Ruby pattern",
+        
+        # Java/C#/JavaScript  
+        'null': "Use None not null - Java/C#/JS pattern",
     }
     
     def check_node(
@@ -376,7 +387,7 @@ class HallucinatedAttribute(ASTPattern):
         
         attr_name = node.attr
         
-        if attr_name in self.JS_ATTRIBUTES:
+        if attr_name in self.INVALID_ATTRIBUTES:
             # Try to get the source line for context
             lineno = getattr(node, 'lineno', 0)
             code = None
@@ -386,7 +397,7 @@ class HallucinatedAttribute(ASTPattern):
             return [self.create_issue_from_node(
                 node, file,
                 code=code or f".{attr_name}",
-                message=self.JS_ATTRIBUTES[attr_name],
+                message=self.INVALID_ATTRIBUTES[attr_name],
             )]
         
         return []

@@ -229,3 +229,78 @@ s.strip()
     
     hallucinated = [i for i in issues if i.pattern_id in ("hallucinated_method", "hallucinated_attribute")]
     assert len(hallucinated) == 0
+
+
+def test_java_equals_detected(tmp_python_file):
+    """Test that Java .equals() method is detected."""
+    code = '''
+s1 = "hello"
+s2 = "world"
+result = s1.equals(s2)
+'''
+    file = tmp_python_file(code)
+    detector = Detector()
+    issues = detector.scan([file])
+    
+    method_issues = [i for i in issues if i.pattern_id == "hallucinated_method"]
+    assert len(method_issues) == 1
+    assert "Java" in method_issues[0].message
+
+
+def test_ruby_each_detected(tmp_python_file):
+    """Test that Ruby .each method is detected."""
+    code = '''
+items = [1, 2, 3]
+items.each(lambda x: print(x))
+'''
+    file = tmp_python_file(code)
+    detector = Detector()
+    issues = detector.scan([file])
+    
+    method_issues = [i for i in issues if i.pattern_id == "hallucinated_method"]
+    assert len(method_issues) == 1
+    assert "Ruby" in method_issues[0].message
+
+
+def test_csharp_length_attribute_detected(tmp_python_file):
+    """Test that C# .Length attribute is detected."""
+    code = '''
+items = [1, 2, 3]
+n = items.Length
+'''
+    file = tmp_python_file(code)
+    detector = Detector()
+    issues = detector.scan([file])
+    
+    attr_issues = [i for i in issues if i.pattern_id == "hallucinated_attribute"]
+    assert len(attr_issues) == 1
+    assert "C#" in attr_issues[0].message
+
+
+def test_php_strlen_detected(tmp_python_file):
+    """Test that PHP strlen() is detected."""
+    code = '''
+s = "hello"
+n = s.strlen()
+'''
+    file = tmp_python_file(code)
+    detector = Detector()
+    issues = detector.scan([file])
+    
+    method_issues = [i for i in issues if i.pattern_id == "hallucinated_method"]
+    assert len(method_issues) == 1
+    assert "PHP" in method_issues[0].message
+
+
+def test_go_println_detected(tmp_python_file):
+    """Test that Go fmt.Println pattern is detected."""
+    code = '''
+fmt.Println("hello")
+'''
+    file = tmp_python_file(code)
+    detector = Detector()
+    issues = detector.scan([file])
+    
+    method_issues = [i for i in issues if i.pattern_id == "hallucinated_method"]
+    assert len(method_issues) == 1
+    assert "Go" in method_issues[0].message
