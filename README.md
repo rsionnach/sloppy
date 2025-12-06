@@ -272,7 +272,7 @@ format = "detailed"  # or "compact" or "json"
 git clone https://github.com/rsionnach/sloppylint.git
 cd sloppylint
 pip install -e ".[dev]"
-pytest tests/ -v  # 62 tests should pass
+pytest tests/ -v  # 68 tests should pass
 ```
 
 See [AGENTS.md](AGENTS.md) for coding conventions and pattern implementation guide.
