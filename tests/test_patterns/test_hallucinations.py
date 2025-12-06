@@ -60,6 +60,32 @@ docs = "use x if condition else y if other else z"
     assert len(ternary_issues) == 0
 
 
+def test_print_in_comment_not_flagged(tmp_python_file):
+    """Test that print() in inline comments is not flagged."""
+    code = '''
+x = 1  # use print() for debugging
+'''
+    file = tmp_python_file(code)
+    detector = Detector()
+    issues = detector.scan([file])
+    
+    print_issues = [i for i in issues if i.pattern_id == "debug_print"]
+    assert len(print_issues) == 0
+
+
+def test_magic_number_in_comment_not_flagged(tmp_python_file):
+    """Test that numbers in inline comments are not flagged."""
+    code = '''
+x = 1  # error code 2025
+'''
+    file = tmp_python_file(code)
+    detector = Detector()
+    issues = detector.scan([file])
+    
+    magic_issues = [i for i in issues if i.pattern_id == "magic_number"]
+    assert len(magic_issues) == 0
+
+
 def test_mutable_default_list_detected(tmp_python_file):
     """Test that mutable list defaults are detected."""
     code = '''

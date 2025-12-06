@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import List
 
 from sloppy.patterns.base import RegexPattern, ASTPattern, Severity, Issue
+from sloppy.patterns.helpers import is_in_string_or_comment
 
 
 class TodoPlaceholder(RegexPattern):
@@ -54,7 +55,7 @@ class MagicNumber(RegexPattern):
         lineno: int,
         file: Path,
     ) -> List[Issue]:
-        """Check a line for magic numbers, excluding those in strings."""
+        """Check a line for magic numbers, excluding those in strings/comments."""
         if self.pattern is None:
             return []
         
@@ -65,18 +66,8 @@ class MagicNumber(RegexPattern):
         
         issues = []
         for match in self.pattern.finditer(line):
-            # Check if this match is inside a string
-            start = match.start()
-            prefix = line[:start]
-            
-            # Count quotes to determine if we're inside a string
-            single_quotes = prefix.count("'") - prefix.count("\\'")
-            double_quotes = prefix.count('"') - prefix.count('\\"')
-            
-            # If odd number of quotes, we're inside a string
-            if single_quotes % 2 == 1 or double_quotes % 2 == 1:
+            if is_in_string_or_comment(line, match.start()):
                 continue
-            
             issues.append(
                 self.create_issue(
                     file=file,

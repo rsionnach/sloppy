@@ -2,6 +2,7 @@
 
 import re
 from sloppy.patterns.base import RegexPattern, Severity
+from sloppy.patterns.helpers import is_in_string_or_comment
 
 
 class DebugPrint(RegexPattern):
@@ -14,20 +15,14 @@ class DebugPrint(RegexPattern):
     pattern = re.compile(r'\bprint\s*\(', re.IGNORECASE)
     
     def check_line(self, line: str, lineno: int, file) -> list:
-        """Check line, excluding matches inside strings."""
+        """Check line, excluding matches inside strings or comments."""
         if self.pattern is None:
             return []
         
         issues = []
         for match in self.pattern.finditer(line):
-            # Check if match is inside a string
-            start = match.start()
-            prefix = line[:start]
-            single_quotes = prefix.count("'") - prefix.count("\\'")
-            double_quotes = prefix.count('"') - prefix.count('\\"')
-            if single_quotes % 2 == 1 or double_quotes % 2 == 1:
+            if is_in_string_or_comment(line, match.start()):
                 continue
-            
             issues.append(self.create_issue(
                 file=file, line=lineno, column=match.start(), code=line.strip()
             ))
