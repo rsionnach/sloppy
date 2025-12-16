@@ -5,7 +5,6 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Set
 
 from sloppy.patterns.base import Issue, Severity
 
@@ -29,9 +28,9 @@ class DeadCodeAnalyzer(ast.NodeVisitor):
     def __init__(self, file: Path, source: str):
         self.file = file
         self.source = source
-        self.definitions: Dict[str, DefinitionInfo] = {}
-        self.used_names: Set[str] = set()
-        self.exported_names: Set[str] = set()  # Names in __all__
+        self.definitions: dict[str, DefinitionInfo] = {}
+        self.used_names: set[str] = set()
+        self.exported_names: set[str] = set()  # Names in __all__
         self.current_class: str | None = None
 
         # Names that are commonly defined but used externally
@@ -92,7 +91,7 @@ class DeadCodeAnalyzer(ast.NodeVisitor):
             "command",
         }
 
-    def analyze(self, tree: ast.AST) -> List[Issue]:
+    def analyze(self, tree: ast.AST) -> list[Issue]:
         """Analyze the AST and return dead code issues."""
         # First pass: extract __all__ exports
         self._extract_exports(tree)
@@ -171,7 +170,7 @@ class DeadCodeAnalyzer(ast.NodeVisitor):
                 return True
         return False
 
-    def _has_external_decorator(self, decorators: List[ast.expr]) -> bool:
+    def _has_external_decorator(self, decorators: list[ast.expr]) -> bool:
         """Check if any decorator suggests external use."""
         for dec in decorators:
             dec_name = self._get_decorator_name(dec)
@@ -299,7 +298,7 @@ class DeadCodeAnalyzer(ast.NodeVisitor):
         self.generic_visit(node)
 
 
-def find_dead_code(file: Path, source: str) -> List[Issue]:
+def find_dead_code(file: Path, source: str) -> list[Issue]:
     """Find dead code (unused functions/classes) in a Python file."""
     try:
         tree = ast.parse(source, filename=str(file))

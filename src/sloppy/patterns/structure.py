@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import ast
 from pathlib import Path
-from typing import List, Set
 
 from sloppy.patterns.base import ASTPattern, Issue, Severity
 
@@ -22,8 +21,8 @@ class BareExcept(ASTPattern):
         self,
         node: ast.AST,
         file: Path,
-        source_lines: List[str],
-    ) -> List[Issue]:
+        source_lines: list[str],
+    ) -> list[Issue]:
         if not isinstance(node, ast.ExceptHandler):
             return []
 
@@ -48,8 +47,8 @@ class BroadExcept(ASTPattern):
         self,
         node: ast.AST,
         file: Path,
-        source_lines: List[str],
-    ) -> List[Issue]:
+        source_lines: list[str],
+    ) -> list[Issue]:
         if not isinstance(node, ast.ExceptHandler):
             return []
 
@@ -81,16 +80,15 @@ class EmptyExcept(ASTPattern):
         self,
         node: ast.AST,
         file: Path,
-        source_lines: List[str],
-    ) -> List[Issue]:
+        source_lines: list[str],
+    ) -> list[Issue]:
         if not isinstance(node, ast.ExceptHandler):
             return []
 
         if len(node.body) == 1 and isinstance(node.body[0], ast.Pass):
             exc_name = "..."
-            if node.type:
-                if isinstance(node.type, ast.Name):
-                    exc_name = node.type.id
+            if node.type and isinstance(node.type, ast.Name):
+                exc_name = node.type.id
             return [self.create_issue_from_node(node, file, code=f"except {exc_name}: pass")]
 
         return []
@@ -109,8 +107,8 @@ class StarImport(ASTPattern):
         self,
         node: ast.AST,
         file: Path,
-        source_lines: List[str],
-    ) -> List[Issue]:
+        source_lines: list[str],
+    ) -> list[Issue]:
         if not isinstance(node, ast.ImportFrom):
             return []
 
@@ -172,8 +170,8 @@ class SingleMethodClass(ASTPattern):
         self,
         node: ast.AST,
         file: Path,
-        source_lines: List[str],
-    ) -> List[Issue]:
+        source_lines: list[str],
+    ) -> list[Issue]:
         if not isinstance(node, ast.ClassDef):
             return []
 
@@ -296,8 +294,8 @@ class UnreachableCode(ASTPattern):
         self,
         node: ast.AST,
         file: Path,
-        source_lines: List[str],
-    ) -> List[Issue]:
+        source_lines: list[str],
+    ) -> list[Issue]:
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             return []
 

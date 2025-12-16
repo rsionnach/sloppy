@@ -33,6 +33,9 @@ dev = [
     "black>=23.0",
     "isort>=5.0",
     "mypy>=1.0",
+    "ruff>=0.8.0",
+    "pre-commit>=3.0",
+    "pip-audit>=2.0",
 ]
 rich = [
     "rich>=13.0",
@@ -72,6 +75,45 @@ python_version = "3.9"
 strict = true
 warn_return_any = true
 warn_unused_ignores = true
+# AST typing is tricky - these are runtime-correct but hard to type
+# Allow some flexibility for AST node handling
+disable_error_code = ["assignment", "attr-defined"]
+
+[[tool.mypy.overrides]]
+module = "sloppy.analyzers.*"
+disable_error_code = ["assignment", "attr-defined", "return-value"]
+
+[[tool.mypy.overrides]]
+module = "sloppy.patterns.*"
+disable_error_code = ["assignment"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "F",      # pyflakes
+    "W",      # pycodestyle warnings
+    "I",      # isort
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "SIM",    # flake8-simplify
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "SIM102", # nested if statements - often more readable
+    "SIM116", # dict instead of if/elif - sometimes less readable
+    "B024",   # abstract base class without abstract methods - design choice
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/corpus/**" = ["F821", "F401", "E999"]  # Test corpus has intentionally bad code
+
+[tool.ruff.lint.isort]
+known-first-party = ["sloppy"]
 
 [tool.sloppy]
 exclude = ["tests/*", "migrations/*"]

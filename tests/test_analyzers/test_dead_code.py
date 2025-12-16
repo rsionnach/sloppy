@@ -1,15 +1,13 @@
 """Tests for dead code detection."""
 
-from pathlib import Path
 
-import pytest
 
 from sloppy.detector import Detector
 
 
 def test_unused_private_function_detected(tmp_python_file):
     """Test that unused private functions are detected.
-    
+
     Note: Only private functions (prefixed with _) are flagged as dead code
     because public functions are designed to be imported by other files.
     Single-file analysis cannot reliably detect unused public APIs.
@@ -34,7 +32,7 @@ result = _used_func()
 
 def test_public_functions_not_flagged(tmp_python_file):
     """Test that public (non-underscore) functions are NOT flagged.
-    
+
     Public functions are designed to be imported, so we can't reliably
     determine if they're unused with single-file analysis.
     """
@@ -73,7 +71,7 @@ result = main()
 
 def test_unused_private_class_detected(tmp_python_file):
     """Test that unused private classes are detected.
-    
+
     Note: Only private classes (prefixed with _) are flagged as dead code.
     """
     code = """
@@ -171,10 +169,10 @@ def test_dunder_methods_not_flagged(tmp_python_file):
 class MyClass:
     def __init__(self):
         self.value = 42
-    
+
     def __str__(self):
         return str(self.value)
-    
+
     def __repr__(self):
         return f"MyClass({self.value})"
 
@@ -194,7 +192,7 @@ def test_method_called_on_instance_not_flagged(tmp_python_file):
 class Calculator:
     def add(self, a, b):
         return a + b
-    
+
     def subtract(self, a, b):
         return a - b
 

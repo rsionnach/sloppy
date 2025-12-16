@@ -2,18 +2,18 @@
 
 from __future__ import annotations
 
-import os
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-try:
-    import tomllib  # Python 3.11+
-except ImportError:
+if sys.version_info >= (3, 11):
+    import tomllib
+else:
     try:
-        import tomli as tomllib  # Fallback for Python < 3.11
+        import tomli as tomllib
     except ImportError:
-        tomllib = None  # type: ignore
+        tomllib = None  # type: ignore[assignment,unused-ignore]
 
 
 @dataclass
@@ -21,16 +21,19 @@ class Config:
     """Sloppy configuration."""
 
     # Patterns to ignore (glob patterns)
-    ignore: List[str] = field(default_factory=list)
+    ignore: list[str] = field(default_factory=list)
+
+    # Patterns to include (glob patterns) - only scan matching files
+    include: list[str] = field(default_factory=list)
 
     # Pattern IDs to disable
-    disable: List[str] = field(default_factory=list)
+    disable: list[str] = field(default_factory=list)
 
     # Minimum severity level
     severity: str = "low"
 
     # Maximum allowed slop score
-    max_score: Optional[int] = None
+    max_score: int | None = None
 
     # Output format
     format: str = "detailed"
@@ -39,10 +42,11 @@ class Config:
     ci: bool = False
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "Config":
+    def from_dict(cls, data: dict[str, Any]) -> Config:
         """Create config from a dictionary."""
         return cls(
             ignore=data.get("ignore", []),
+            include=data.get("include", []),
             disable=data.get("disable", []),
             severity=data.get("severity", "low"),
             max_score=data.get("max-score"),
@@ -55,6 +59,10 @@ class Config:
         # Append CLI ignores to config ignores
         if hasattr(args, "ignore") and args.ignore:
             self.ignore.extend(args.ignore)
+
+        # Append CLI includes to config includes
+        if hasattr(args, "include") and args.include:
+            self.include.extend(args.include)
 
         # Append CLI disables to config disables
         if hasattr(args, "disable") and args.disable:
@@ -83,7 +91,7 @@ class Config:
             self.ci = True
 
 
-def find_config_file(start_path: Optional[Path] = None) -> Optional[Path]:
+def find_config_file(start_path: Path | None = None) -> Path | None:
     """Find pyproject.toml by searching up from start_path."""
     if start_path is None:
         start_path = Path.cwd()
@@ -99,7 +107,7 @@ def find_config_file(start_path: Optional[Path] = None) -> Optional[Path]:
     return None
 
 
-def load_config(config_path: Optional[Path] = None) -> Config:
+def load_config(config_path: Path | None = None) -> Config:
     """Load configuration from pyproject.toml.
 
     Args:
@@ -134,7 +142,7 @@ def load_config(config_path: Optional[Path] = None) -> Config:
     return Config.from_dict(tool_config)
 
 
-def get_default_ignores() -> List[str]:
+def get_default_ignores() -> list[str]:
     """Return default ignore patterns."""
     return [
         "__pycache__",

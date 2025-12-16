@@ -5,7 +5,6 @@ from __future__ import annotations
 import ast
 import re
 from pathlib import Path
-from typing import List
 
 from sloppy.patterns.base import ASTPattern, Issue, RegexPattern, Severity
 from sloppy.patterns.helpers import is_in_string_or_comment
@@ -86,8 +85,8 @@ class GodFunction(ASTPattern):
         self,
         node: ast.AST,
         file: Path,
-        source_lines: List[str],
-    ) -> List[Issue]:
+        source_lines: list[str],
+    ) -> list[Issue]:
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             return []
 
@@ -150,8 +149,8 @@ class DeepNesting(ASTPattern):
         self,
         node: ast.AST,
         file: Path,
-        source_lines: List[str],
-    ) -> List[Issue]:
+        source_lines: list[str],
+    ) -> list[Issue]:
         # This is handled specially in the analyzer to track depth
         return []
 
@@ -167,12 +166,12 @@ class NestedTernary(RegexPattern):
         r"\bif\b[^:]+\belse\b[^:]+\bif\b[^:]+\belse\b",
     )
 
-    def check_line(self, line: str, lineno: int, file) -> list:
+    def check_line(self, line: str, lineno: int, file: Path) -> list[Issue]:
         """Check line, excluding matches inside strings or comments."""
         if self.pattern is None:
             return []
 
-        issues = []
+        issues: list[Issue] = []
         for match in self.pattern.finditer(line):
             if is_in_string_or_comment(line, match.start()):
                 continue

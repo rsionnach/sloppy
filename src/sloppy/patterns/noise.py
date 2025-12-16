@@ -3,10 +3,8 @@
 import ast
 import re
 from pathlib import Path
-from typing import List
 
 from sloppy.patterns.base import ASTPattern, Issue, RegexPattern, Severity
-from sloppy.patterns.helpers import is_in_string_or_comment
 
 
 class DebugPrint(ASTPattern):
@@ -31,8 +29,8 @@ class DebugPrint(ASTPattern):
         self,
         node: ast.AST,
         file: Path,
-        source_lines: List[str],
-    ) -> List[Issue]:
+        source_lines: list[str],
+    ) -> list[Issue]:
         if not isinstance(node, ast.Call):
             return []
 
@@ -70,7 +68,7 @@ class DebugPrint(ASTPattern):
             )
         ]
 
-    def _is_in_main_block(self, node: ast.AST, source_lines: List[str]) -> bool:
+    def _is_in_main_block(self, node: ast.AST, source_lines: list[str]) -> bool:
         """Check if the node is inside an if __name__ == '__main__' block."""
         lineno = getattr(node, "lineno", 0)
         if lineno <= 0:

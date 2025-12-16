@@ -1,8 +1,6 @@
 """Tests for unused imports detection."""
 
-from pathlib import Path
 
-import pytest
 
 from sloppy.detector import Detector
 

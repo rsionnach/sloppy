@@ -5,7 +5,6 @@ from __future__ import annotations
 import ast
 import re
 from pathlib import Path
-from typing import List
 
 from sloppy.patterns.base import ASTPattern, Issue, RegexPattern, Severity
 from sloppy.patterns.helpers import is_in_string_or_comment
@@ -70,7 +69,7 @@ class MagicNumber(RegexPattern):
         line: str,
         lineno: int,
         file: Path,
-    ) -> List[Issue]:
+    ) -> list[Issue]:
         """Check a line for magic numbers, excluding those in strings/comments."""
         if self.pattern is None:
             return []
@@ -120,8 +119,8 @@ class PassPlaceholder(ASTPattern):
         self,
         node: ast.AST,
         file: Path,
-        source_lines: List[str],
-    ) -> List[Issue]:
+        source_lines: list[str],
+    ) -> list[Issue]:
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             return []
 
@@ -168,7 +167,7 @@ class PassPlaceholder(ASTPattern):
         return False
 
     def _is_likely_protocol_method(
-        self, node: ast.FunctionDef | ast.AsyncFunctionDef, source_lines: List[str]
+        self, node: ast.FunctionDef | ast.AsyncFunctionDef, source_lines: list[str]
     ) -> bool:
         """Check if function is likely a method inside a Protocol/ABC class."""
         args = node.args.args
@@ -215,8 +214,8 @@ class EllipsisPlaceholder(ASTPattern):
         self,
         node: ast.AST,
         file: Path,
-        source_lines: List[str],
-    ) -> List[Issue]:
+        source_lines: list[str],
+    ) -> list[Issue]:
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             return []
 
@@ -271,7 +270,7 @@ class EllipsisPlaceholder(ASTPattern):
         return False
 
     def _is_likely_protocol_method(
-        self, node: ast.FunctionDef | ast.AsyncFunctionDef, source_lines: List[str]
+        self, node: ast.FunctionDef | ast.AsyncFunctionDef, source_lines: list[str]
     ) -> bool:
         """Check if function is likely a method inside a Protocol/ABC class."""
         # Check if it's a method (first arg is self/cls)
@@ -322,8 +321,8 @@ class NotImplementedPlaceholder(ASTPattern):
         self,
         node: ast.AST,
         file: Path,
-        source_lines: List[str],
-    ) -> List[Issue]:
+        source_lines: list[str],
+    ) -> list[Issue]:
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             return []
 
@@ -381,7 +380,7 @@ class NotImplementedPlaceholder(ASTPattern):
         return False
 
     def _is_likely_protocol_method(
-        self, node: ast.FunctionDef | ast.AsyncFunctionDef, source_lines: List[str]
+        self, node: ast.FunctionDef | ast.AsyncFunctionDef, source_lines: list[str]
     ) -> bool:
         """Check if function is likely a method inside a Protocol/ABC class."""
         args = node.args.args
@@ -419,8 +418,8 @@ class MutableDefaultArg(ASTPattern):
         self,
         node: ast.AST,
         file: Path,
-        source_lines: List[str],
-    ) -> List[Issue]:
+        source_lines: list[str],
+    ) -> list[Issue]:
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             return []
 
@@ -475,8 +474,8 @@ class HallucinatedImport(ASTPattern):
         self,
         node: ast.AST,
         file: Path,
-        source_lines: List[str],
-    ) -> List[Issue]:
+        source_lines: list[str],
+    ) -> list[Issue]:
         if not isinstance(node, ast.ImportFrom):
             return []
 
@@ -515,8 +514,8 @@ class WrongStdlibImport(ASTPattern):
         self,
         node: ast.AST,
         file: Path,
-        source_lines: List[str],
-    ) -> List[Issue]:
+        source_lines: list[str],
+    ) -> list[Issue]:
         from sloppy.analyzers.import_validator import is_likely_hallucinated_package
 
         issues = []
@@ -534,21 +533,20 @@ class WrongStdlibImport(ASTPattern):
                         )
                     )
 
-        elif isinstance(node, ast.ImportFrom):
-            if node.module:
-                error_msg = is_likely_hallucinated_package(node.module, source_file=file)
-                if error_msg:
-                    names = ", ".join(a.name for a in node.names[:3])
-                    if len(node.names) > 3:
-                        names += ", ..."
-                    issues.append(
-                        self.create_issue_from_node(
-                            node,
-                            file,
-                            code=f"from {node.module} import {names}",
-                            message=error_msg,
-                        )
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            error_msg = is_likely_hallucinated_package(node.module, source_file=file)
+            if error_msg:
+                names = ", ".join(a.name for a in node.names[:3])
+                if len(node.names) > 3:
+                    names += ", ..."
+                issues.append(
+                    self.create_issue_from_node(
+                        node,
+                        file,
+                        code=f"from {node.module} import {names}",
+                        message=error_msg,
                     )
+                )
 
         return issues
 
@@ -566,8 +564,8 @@ class HallucinatedMethod(ASTPattern):
         self,
         node: ast.AST,
         file: Path,
-        source_lines: List[str],
-    ) -> List[Issue]:
+        source_lines: list[str],
+    ) -> list[Issue]:
         if not isinstance(node, ast.Call):
             return []
 
@@ -629,8 +627,8 @@ class HallucinatedAttribute(ASTPattern):
         self,
         node: ast.AST,
         file: Path,
-        source_lines: List[str],
-    ) -> List[Issue]:
+        source_lines: list[str],
+    ) -> list[Issue]:
         if not isinstance(node, ast.Attribute):
             return []
 

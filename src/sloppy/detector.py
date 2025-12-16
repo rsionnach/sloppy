@@ -4,14 +4,13 @@ from __future__ import annotations
 
 import ast
 from pathlib import Path
-from typing import TYPE_CHECKING, Iterator, List, Optional, Set, Tuple
 
 from sloppy.analyzers.ast_analyzer import ASTAnalyzer
 from sloppy.analyzers.dead_code import find_dead_code
 from sloppy.analyzers.duplicates import find_cross_file_duplicates
 from sloppy.analyzers.unused_imports import find_unused_imports
 from sloppy.patterns import get_all_patterns
-from sloppy.patterns.base import Issue, Severity
+from sloppy.patterns.base import Issue
 
 SEVERITY_ORDER = {
     "low": 0,
@@ -26,19 +25,21 @@ class Detector:
 
     def __init__(
         self,
-        ignore_patterns: Optional[List[str]] = None,
-        disabled_patterns: Optional[List[str]] = None,
+        ignore_patterns: list[str] | None = None,
+        include_patterns: list[str] | None = None,
+        disabled_patterns: list[str] | None = None,
         min_severity: str = "low",
     ):
         self.ignore_patterns = ignore_patterns or []
-        self.disabled_patterns: Set[str] = set(disabled_patterns or [])
+        self.include_patterns = include_patterns or []
+        self.disabled_patterns: set[str] = set(disabled_patterns or [])
         self.min_severity = min_severity
         self.min_severity_level = SEVERITY_ORDER.get(min_severity, 0)
 
         # Load patterns
         self.patterns = [p for p in get_all_patterns() if p.id not in self.disabled_patterns]
 
-    def scan(self, paths: List[Path]) -> List[Issue]:
+    def scan(self, paths: list[Path]) -> list[Issue]:
         """Scan all paths and return issues."""
         issues: list[Issue] = []
         file_contents: list[tuple[Path, str]] = []  # For cross-file analysis
@@ -80,23 +81,47 @@ class Detector:
 
     def _should_scan(self, path: Path) -> bool:
         """Check if a file should be scanned."""
-        if not path.suffix == ".py":
+        if path.suffix != ".py":
             return False
 
         # Check ignore patterns
-        path_str = str(path)
         for pattern in self.ignore_patterns:
             if path.match(pattern):
                 return False
 
+        # Check include patterns (if specified, file must match at least one)
+        if self.include_patterns:
+            matched = False
+            for pattern in self.include_patterns:
+                if path.match(pattern) or self._match_glob(path, pattern):
+                    matched = True
+                    break
+            if not matched:
+                return False
+
         return True
 
-    def _scan_file(self, path: Path) -> List[Issue]:
+    def _match_glob(self, path: Path, pattern: str) -> bool:
+        """Match path against a glob pattern with ** support."""
+        import fnmatch
+
+        path_str = str(path)
+        # Handle ** patterns by checking if pattern matches any part of path
+        if "**" in pattern:
+            # Convert ** glob to regex-like matching
+            # e.g., "scripts/**/*.py" should match "scripts/foo/bar.py"
+            pattern.replace("**", "*").split("/")
+            return fnmatch.fnmatch(path_str, pattern) or fnmatch.fnmatch(
+                path_str, pattern.replace("**", "*")
+            )
+        return fnmatch.fnmatch(path_str, pattern)
+
+    def _scan_file(self, path: Path) -> list[Issue]:
         """Scan a single file."""
         issues, _ = self._scan_file_with_content(path)
         return issues
 
-    def _scan_file_with_content(self, path: Path) -> tuple[List[Issue], Optional[str]]:
+    def _scan_file_with_content(self, path: Path) -> tuple[list[Issue], str | None]:
         """Scan a single file and return issues with content."""
         issues: list[Issue] = []
 

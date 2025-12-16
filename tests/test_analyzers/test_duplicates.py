@@ -1,6 +1,5 @@
 """Tests for cross-file duplicate detection."""
 
-import os
 import tempfile
 from pathlib import Path
 
@@ -82,10 +81,10 @@ def test_duplicate_class_detected(tmp_dir):
 class DataProcessor:
     def __init__(self, data):
         self.data = data
-    
+
     def process(self):
         return [x * 2 for x in self.data]
-    
+
     def validate(self):
         return all(x > 0 for x in self.data)
 """

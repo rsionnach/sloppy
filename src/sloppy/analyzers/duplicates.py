@@ -7,7 +7,6 @@ import hashlib
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Tuple
 
 from sloppy.patterns.base import Issue, Severity
 
@@ -30,8 +29,8 @@ class DuplicateDetector:
 
     MIN_LINES = 5  # Minimum lines for a block to be considered
 
-    def __init__(self):
-        self.blocks: List[CodeBlock] = []
+    def __init__(self) -> None:
+        self.blocks: list[CodeBlock] = []
 
     def add_file(self, file: Path, source: str) -> None:
         """Extract code blocks from a file."""
@@ -56,7 +55,7 @@ class DuplicateDetector:
         self,
         node: ast.FunctionDef | ast.AsyncFunctionDef,
         file: Path,
-        lines: List[str],
+        lines: list[str],
     ) -> CodeBlock | None:
         """Extract and normalize a function block."""
         # Skip small functions
@@ -71,7 +70,7 @@ class DuplicateDetector:
             return None
 
         # Get the source code
-        code_lines = lines[node.lineno - 1 : end_line]
+        lines[node.lineno - 1 : end_line]
 
         # Normalize the code for comparison
         normalized = self._normalize_function(node)
@@ -90,7 +89,7 @@ class DuplicateDetector:
         self,
         node: ast.ClassDef,
         file: Path,
-        lines: List[str],
+        lines: list[str],
     ) -> CodeBlock | None:
         """Extract and normalize a class block."""
         end_line = self._get_end_line(node)
@@ -312,17 +311,17 @@ class DuplicateDetector:
             return call.func.attr
         return "unknown"
 
-    def find_duplicates(self) -> List[Issue]:
+    def find_duplicates(self) -> list[Issue]:
         """Find duplicate code blocks and return issues."""
         # Group blocks by hash
-        by_hash: Dict[str, List[CodeBlock]] = defaultdict(list)
+        by_hash: dict[str, list[CodeBlock]] = defaultdict(list)
         for block in self.blocks:
             by_hash[block.code_hash].append(block)
 
-        issues = []
-        seen_pairs: set = set()
+        issues: list[Issue] = []
+        seen_pairs: set[tuple[str, ...]] = set()
 
-        for code_hash, blocks in by_hash.items():
+        for _code_hash, blocks in by_hash.items():
             if len(blocks) < 2:
                 continue
 
@@ -372,7 +371,7 @@ class DuplicateDetector:
         return issues
 
 
-def find_cross_file_duplicates(files: List[Tuple[Path, str]]) -> List[Issue]:
+def find_cross_file_duplicates(files: list[tuple[Path, str]]) -> list[Issue]:
     """Find duplicate code across multiple files.
 
     Args:

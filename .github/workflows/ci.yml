@@ -51,14 +51,38 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Check formatting
+      - name: Check formatting (Ruff)
+        run: |
+          ruff check src/ tests/
+          ruff format --check src/ tests/
+
+      - name: Check formatting (Black/isort)
         run: |
           black --check src/ tests/
           isort --check-only src/ tests/
 
       - name: Type check
         run: |
-          mypy src/sloppy || true  # Allow failures initially
+          mypy src/sloppy
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Security audit
+        run: |
+          pip-audit
 
   self-check:
     runs-on: ubuntu-latest

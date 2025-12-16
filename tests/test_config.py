@@ -1,9 +1,6 @@
 """Tests for configuration support."""
 
-import tempfile
 from pathlib import Path
-
-import pytest
 
 from sloppy.config import Config, find_config_file, get_default_ignores, load_config
 

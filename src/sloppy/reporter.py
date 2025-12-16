@@ -10,9 +10,7 @@ from typing import TYPE_CHECKING
 try:
     from rich import box
     from rich.console import Console
-    from rich.panel import Panel
     from rich.table import Table
-    from rich.text import Text
 
     RICH_AVAILABLE = True
 except ImportError:
@@ -205,7 +203,7 @@ class TerminalReporter(Reporter):
 
     def _group_by_severity(self, issues: list["Issue"]) -> dict[str, list["Issue"]]:
         """Group issues by severity level."""
-        by_severity: dict[str, list["Issue"]] = {
+        by_severity: dict[str, list[Issue]] = {
             "critical": [],
             "high": [],
             "medium": [],
@@ -229,7 +227,7 @@ class JSONReporter(Reporter):
         data = self._build_report(issues, score)
         Path(path).write_text(json.dumps(data, indent=2))
 
-    def _build_report(self, issues: list["Issue"], score: "SlopScore") -> dict:
+    def _build_report(self, issues: list["Issue"], score: "SlopScore") -> dict[str, object]:
         """Build the JSON report structure."""
         return {
             "summary": {

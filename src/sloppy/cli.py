@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import List, Optional
 
 from sloppy import __version__
 from sloppy.config import get_default_ignores, load_config
@@ -61,6 +60,15 @@ def create_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
+        "--include",
+        "-I",
+        action="append",
+        default=[],
+        metavar="PATTERN",
+        help="Only scan files matching glob pattern (can be repeated)",
+    )
+
+    parser.add_argument(
         "--disable",
         "-d",
         action="append",
@@ -104,7 +112,7 @@ def create_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(args: Optional[List[str]] = None) -> int:
+def main(args: list[str] | None = None) -> int:
     """Main entry point."""
     parser = create_parser()
     opts = parser.parse_args(args)
@@ -126,9 +134,13 @@ def main(args: Optional[List[str]] = None) -> int:
     # Build ignore patterns (defaults + config + cli)
     ignore_patterns = get_default_ignores() + config.ignore
 
+    # Build include patterns (config + cli)
+    include_patterns = config.include
+
     # Create detector and scan
     detector = Detector(
         ignore_patterns=ignore_patterns,
+        include_patterns=include_patterns,
         disabled_patterns=config.disable,
         min_severity=min_severity,
     )
@@ -144,14 +156,14 @@ def main(args: Optional[List[str]] = None) -> int:
 
     # Report results
     if config.format == "json" or opts.output:
-        reporter = JSONReporter()
+        json_reporter = JSONReporter()
+        json_reporter.report(issues, score)
     else:
-        reporter = TerminalReporter(
+        terminal_reporter = TerminalReporter(
             format_style=config.format,
             min_severity=min_severity,
         )
-
-    reporter.report(issues, score)
+        terminal_reporter.report(issues, score)
 
     # Write JSON output if requested
     if opts.output:

@@ -1,8 +1,6 @@
 """Tests for hallucination detection patterns."""
 
-from pathlib import Path
 
-import pytest
 
 from sloppy.detector import Detector
 

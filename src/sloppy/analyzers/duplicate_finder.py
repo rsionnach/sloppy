@@ -1,10 +1,10 @@
 """Cross-file duplicate code detection."""
 
 import ast
+from collections.abc import Iterator
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Iterator
 
 
 @dataclass
@@ -29,7 +29,7 @@ class DuplicatePair:
 
 def extract_functions(file: Path, source: str) -> list[FunctionInfo]:
     """Extract function information from a file."""
-    functions = []
+    functions: list[FunctionInfo] = []
 
     try:
         tree = ast.parse(source)

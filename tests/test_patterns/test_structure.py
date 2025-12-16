@@ -1,8 +1,6 @@
 """Tests for structural pattern detection."""
 
-from pathlib import Path
 
-import pytest
 
 from sloppy.detector import Detector
 
@@ -104,7 +102,7 @@ def test_single_method_class_detected(tmp_python_file):
 class Processor:
     def __init__(self, data):
         self.data = data
-    
+
     def process(self):
         return self.data.strip()
 """
@@ -122,10 +120,10 @@ def test_multi_method_class_not_flagged(tmp_python_file):
 class Processor:
     def __init__(self, data):
         self.data = data
-    
+
     def process(self):
         return self.data.strip()
-    
+
     def validate(self):
         return bool(self.data)
 """

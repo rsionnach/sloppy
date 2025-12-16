@@ -3,13 +3,11 @@
 from __future__ import annotations
 
 import ast
-import re
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Optional
-from typing import Pattern as RePattern
+from re import Pattern as RePattern
 
 
 class Severity(Enum):
@@ -92,7 +90,7 @@ class BasePattern(ABC):
 class RegexPattern(BasePattern):
     """Pattern that matches via regex on lines."""
 
-    pattern: Optional[RePattern[str]] = None
+    pattern: RePattern[str] | None = None
 
     def check_line(
         self,

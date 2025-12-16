@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import ast
 from pathlib import Path
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from sloppy.patterns.base import BasePattern, Issue
@@ -17,16 +17,16 @@ class ASTAnalyzer(ast.NodeVisitor):
         self,
         file: Path,
         source: str,
-        patterns: List["BasePattern"],
+        patterns: list[BasePattern],
     ):
         self.file = file
         self.source = source
         self.source_lines = source.splitlines()
         self.patterns = patterns
-        self.issues: List["Issue"] = []
+        self.issues: list[Issue] = []
         self.nesting_depth = 0
 
-    def analyze(self, tree: ast.AST) -> List["Issue"]:
+    def analyze(self, tree: ast.AST) -> list[Issue]:
         """Run analysis on the AST."""
         self.visit(tree)
         return self.issues

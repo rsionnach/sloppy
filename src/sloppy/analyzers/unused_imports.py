@@ -5,7 +5,6 @@ from __future__ import annotations
 import ast
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Set
 
 from sloppy.patterns.base import Issue, Severity
 
@@ -28,9 +27,9 @@ class UnusedImportAnalyzer(ast.NodeVisitor):
     def __init__(self, file: Path, source: str):
         self.file = file
         self.source = source
-        self.imports: Dict[str, ImportInfo] = {}  # name -> ImportInfo
-        self.used_names: Set[str] = set()
-        self.star_imports: List[ImportInfo] = []
+        self.imports: dict[str, ImportInfo] = {}  # name -> ImportInfo
+        self.used_names: set[str] = set()
+        self.star_imports: list[ImportInfo] = []
 
         # Names that are commonly imported but used implicitly
         self.implicit_uses = {
@@ -53,7 +52,7 @@ class UnusedImportAnalyzer(ast.NodeVisitor):
             "Protocol",
         }
 
-    def analyze(self, tree: ast.AST) -> List[Issue]:
+    def analyze(self, tree: ast.AST) -> list[Issue]:
         """Analyze the AST and return unused import issues."""
         # First pass: collect imports
         self.visit(tree)
@@ -242,7 +241,7 @@ class UnusedImportAnalyzer(ast.NodeVisitor):
                 self.used_names.add(annotation.value.split("[")[0].strip())
 
 
-def find_unused_imports(file: Path, source: str) -> List[Issue]:
+def find_unused_imports(file: Path, source: str) -> list[Issue]:
     """Find unused imports in a Python file."""
     try:
         tree = ast.parse(source, filename=str(file))

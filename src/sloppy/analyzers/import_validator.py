@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import importlib.util
 import sys
-from typing import Optional, Set
+from pathlib import Path
 
 # Standard library modules (Python 3.9+)
-STDLIB_MODULES: Set[str] = (
+STDLIB_MODULES: set[str] = (
     set(sys.stdlib_module_names)
     if hasattr(sys, "stdlib_module_names")
     else {
@@ -90,7 +90,7 @@ def module_exists(module_name: str) -> bool:
         return True  # Assume exists to avoid false positives
 
 
-def validate_import(module_name: str, name: Optional[str] = None) -> Optional[str]:
+def validate_import(module_name: str, name: str | None = None) -> str | None:
     """
     Validate that an import is correct.
 
@@ -176,15 +176,18 @@ KNOWN_HALLUCINATIONS = {
 }
 
 
-def check_known_hallucination(module: str, name: Optional[str]) -> Optional[str]:
+def check_known_hallucination(module: str, name: str | None) -> str | None:
     """Check if this is a known hallucinated import pattern."""
     # Check exact match
-    result = KNOWN_HALLUCINATIONS.get((module, name))
-    if result is not None:
-        return result
+    if name is not None:
+        result = KNOWN_HALLUCINATIONS.get((module, name))
+        if result is not None:
+            return result
 
     # Check module-only patterns (name=None in dict)
-    module_only = KNOWN_HALLUCINATIONS.get((module, None))
+    # Use a cast since the dict has mixed None/str values
+    key: tuple[str, str | None] = (module, None)
+    module_only = KNOWN_HALLUCINATIONS.get(key)  # type: ignore[arg-type]
     if module_only is not None:
         return module_only
 
@@ -192,8 +195,8 @@ def check_known_hallucination(module: str, name: Optional[str]) -> Optional[str]
 
 
 def is_likely_hallucinated_package(
-    module_name: str, source_file: Optional["Path"] = None
-) -> Optional[str]:
+    module_name: str, source_file: Path | None = None
+) -> str | None:
     """
     Check if a module name looks like a hallucinated package.
 
@@ -203,7 +206,6 @@ def is_likely_hallucinated_package(
 
     Returns error message if likely hallucinated, None otherwise.
     """
-    from pathlib import Path
 
     base = module_name.split(".")[0]
 
@@ -419,11 +421,10 @@ HALLUCINATED_METHODS = {
     "print": (None, None),  # Valid builtin
     "sorted": (None, None),  # Valid builtin
     "reversed": (None, None),  # Valid builtin
-    "len": (None, None),  # Valid builtin
 }
 
 
-def check_hallucinated_method(method_name: str) -> Optional[str]:
+def check_hallucinated_method(method_name: str) -> str | None:
     """
     Check if a method name is a known hallucination.
 
